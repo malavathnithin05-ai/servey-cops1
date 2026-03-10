@@ -1,0 +1,45 @@
+import streamlit as st
+import requests
+
+st.title("👗 Generative AI Fashion Recommender")
+
+gender = st.selectbox(
+    "Select Gender",
+    ["Male","Female","Unisex"]
+)
+
+occasion = st.selectbox(
+    "Occasion",
+    ["Casual","Party","Office","Wedding"]
+)
+
+season = st.selectbox(
+    "Season",
+    ["Summer","Winter","Spring","Autumn"]
+)
+
+color = st.text_input("Preferred Color")
+
+if st.button("Generate Outfit"):
+
+    try:
+        with st.spinner("Generating outfit..."):
+            response = requests.post(
+                "http://127.0.0.1:8000/recommend",
+                json={
+                    "gender": gender,
+                    "occasion": occasion,
+                    "season": season,
+                    "color_preference": color
+                }
+            )
+            response.raise_for_status() # Raise an exception for HTTP errors
+            result = response.json()
+            
+            st.subheader("✨ AI Suggested Outfit")
+            st.write(result.get("recommendation", "No recommendation returned."))
+            
+    except requests.exceptions.ConnectionError:
+        st.error("Failed to connect to the backend server. Make sure it is running on http://127.0.0.1:8000.")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
